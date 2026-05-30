@@ -11,6 +11,10 @@ src-tauri/target/
 # Tauri
 src-tauri/WixTools/
 
+# Dev tools cache
+.vs-cache/
+vs_BuildTools.exe
+
 # IDE
 .vscode/
 .idea/
@@ -21,6 +25,7 @@ src-tauri/WixTools/
 .DS_Store
 Thumbs.db
 desktop.ini
+nul
 
 # Environment
 .env

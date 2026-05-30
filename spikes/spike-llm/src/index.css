@@ -1,0 +1,33 @@
+:root {
+  --text: #6b7280;
+  --text-h: #111827;
+  --bg: #fff;
+  --border: #e5e7eb;
+  --code-bg: #f9fafb;
+  --accent: #6366f1;
+  --accent-bg: rgba(99, 102, 241, 0.08);
+  --accent-border: rgba(99, 102, 241, 0.3);
+  --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace;
+  font: 15px/1.5 var(--sans);
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+h1, h2, h3 {
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+input:disabled, textarea:disabled {
+  opacity: 0.6;
+}
