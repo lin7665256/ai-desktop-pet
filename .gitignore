@@ -6,10 +6,11 @@ node_modules/
 # Build output
 dist/
 build/
-src-tauri/target/
+**/src-tauri/target/
 
 # Tauri
-src-tauri/WixTools/
+**/src-tauri/WixTools/
+**/src-tauri/gen/schemas/
 
 # Dev tools cache
 .vs-cache/

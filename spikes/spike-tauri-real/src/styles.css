@@ -1,0 +1,241 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  background: transparent !important;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+.app-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  cursor: grab;
+  user-select: none;
+}
+
+.app-container.dragging {
+  cursor: grabbing;
+}
+
+/* 控制栏 */
+.control-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 12px;
+  padding: 4px 8px;
+}
+
+.ctrl-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.ctrl-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.close-btn:hover {
+  background: #ff4444;
+}
+
+/* 宠物主体 */
+.pet-body {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+}
+
+.pet-body.idle {
+  animation: float 3s ease-in-out infinite;
+}
+
+.pet-body.thinking {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.pet-body.done {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.pet-face {
+  position: relative;
+  width: 60px;
+  height: 40px;
+}
+
+.eye {
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 8px;
+}
+
+.eye.left { left: 8px; }
+.eye.right { right: 8px; }
+
+.pet-body.thinking .eye {
+  height: 4px;
+  border-radius: 4px;
+  top: 12px;
+}
+
+.pet-body.done .eye {
+  height: 14px;
+  width: 14px;
+}
+
+.mouth {
+  width: 20px;
+  height: 10px;
+  border-bottom: 3px solid white;
+  border-radius: 0 0 10px 10px;
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.pet-body.done .mouth {
+  border-bottom: none;
+  background: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+}
+
+.pet-status {
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 8px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* 动画 */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* 拖拽提示 */
+.drag-hint {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+/* 文件列表 */
+.file-list {
+  margin-top: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 8px;
+  padding: 8px;
+  width: 100%;
+  max-width: 260px;
+}
+
+.file-header {
+  color: #aaa;
+  font-size: 11px;
+  margin-bottom: 4px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 11px;
+}
+
+.file-name {
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 160px;
+}
+
+.file-size {
+  color: #888;
+  font-size: 10px;
+}
+
+/* 日志面板 */
+.log-panel {
+  margin-top: 8px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 8px;
+  padding: 8px;
+  width: 100%;
+  max-width: 260px;
+  font-family: "SF Mono", Monaco, monospace;
+}
+
+.log-line {
+  color: #4ade80;
+  font-size: 10px;
+  line-height: 1.4;
+  padding: 1px 0;
+}
+
+/* 窗口信息 */
+.window-info {
+  position: fixed;
+  bottom: 4px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #888;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+}
