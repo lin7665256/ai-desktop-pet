@@ -239,3 +239,107 @@ html, body {
   border-radius: 4px;
   font-family: monospace;
 }
+
+/* === 气泡 === */
+.bubble {
+  background: rgba(0, 0, 0, 0.85);
+  border-radius: 12px;
+  padding: 10px 14px;
+  max-width: 260px;
+  width: 100%;
+  margin-bottom: 8px;
+  cursor: pointer;
+  animation: fadeIn 0.3s ease;
+}
+
+.bubble-progress {
+  cursor: default;
+}
+
+.bubble-error {
+  border: 1px solid rgba(255, 68, 68, 0.4);
+}
+
+.bubble-text {
+  color: #eee;
+  font-size: 12px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.bubble-association {
+  color: #ffd700;
+  font-size: 11px;
+  margin-top: 6px;
+  font-style: italic;
+}
+
+.bubble-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+/* 主题标签 pill */
+.topic-pill {
+  display: inline-block;
+  background: rgba(102, 126, 234, 0.3);
+  color: #a8b8ff;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.topic-pill-sm {
+  display: inline-block;
+  background: rgba(102, 126, 234, 0.2);
+  color: #8898dd;
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+/* 知识画像摘要 */
+.knowledge-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+  justify-content: center;
+}
+
+/* 错误状态宠物 */
+.pet-body.error {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  animation: shake 0.5s ease;
+}
+
+/* 文件列表信息列 */
+.file-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.file-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+/* 动画 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}

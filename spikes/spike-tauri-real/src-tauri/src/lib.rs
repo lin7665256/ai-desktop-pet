@@ -1,5 +1,6 @@
 use tauri::{Emitter, Manager, WindowEvent};
 use serde::{Deserialize, Serialize};
+use base64::Engine;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileInfo {
@@ -7,6 +8,34 @@ pub struct FileInfo {
     path: String,
     size: u64,
     extension: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileContent {
+    content: String,
+    is_binary: bool,
+    size: u64,
+}
+
+// Tauri command: 读取文件内容
+#[tauri::command]
+fn read_file(path: String) -> Result<FileContent, String> {
+    let bytes = std::fs::read(&path).map_err(|e| format!("读取失败: {}", e))?;
+    let size = bytes.len() as u64;
+
+    // 尝试 UTF-8 解码；成功则为文本，失败则为二进制(base64)
+    match String::from_utf8(bytes.clone()) {
+        Ok(text) => Ok(FileContent {
+            content: text,
+            is_binary: false,
+            size,
+        }),
+        Err(_) => Ok(FileContent {
+            content: base64::engine::general_purpose::STANDARD.encode(&bytes),
+            is_binary: true,
+            size,
+        }),
+    }
 }
 
 // Tauri command: 获取窗口信息
@@ -104,7 +133,8 @@ pub fn run() {
             get_window_info,
             toggle_click_through,
             toggle_always_on_top,
-            close_window
+            close_window,
+            read_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
