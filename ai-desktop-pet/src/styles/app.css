@@ -1,0 +1,708 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+input, textarea, [contenteditable] {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+html, body {
+  background: transparent !important;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+/* === App Container === */
+.app-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 8px;
+  user-select: none;
+  position: relative;
+}
+
+/* Invisible drag handle at bottom of window */
+.drag-handle {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+  z-index: 500;
+  cursor: grab;
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* === Pet Container === */
+.pet-container {
+  width: 300px;
+  height: 400px;
+  cursor: grab;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.pet-container:active {
+  cursor: grabbing;
+}
+
+.pet-container canvas {
+  display: block;
+}
+
+/* === CSS Fallback Pet (when WebGL fails) === */
+.pet-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pet-css-body {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+  animation: float 3s ease-in-out infinite;
+}
+
+.pet-fallback.thinking .pet-css-body {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.pet-fallback.done .pet-css-body {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.pet-fallback.error .pet-css-body {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  animation: shake 0.5s ease;
+}
+
+.pet-css-face {
+  position: relative;
+  width: 60px;
+  height: 40px;
+}
+
+.pet-css-eye {
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 8px;
+}
+
+.pet-css-eye-left { left: 8px; }
+.pet-css-eye-right { right: 8px; }
+
+.pet-fallback.thinking .pet-css-eye {
+  height: 4px;
+  border-radius: 4px;
+  top: 12px;
+}
+
+.pet-css-mouth {
+  width: 20px;
+  height: 10px;
+  border-bottom: 3px solid white;
+  border-radius: 0 0 10px 10px;
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.pet-fallback.done .pet-css-mouth {
+  border-bottom: none;
+  background: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+}
+
+.pet-css-label {
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 8px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* === Bubble === */
+.bubble {
+  background: rgba(0, 0, 0, 0.85);
+  border-radius: 12px;
+  padding: 10px 14px;
+  max-width: 260px;
+  width: 100%;
+  margin-bottom: 8px;
+  cursor: pointer;
+  animation: fadeIn 0.3s ease;
+}
+
+.bubble-progress {
+  cursor: default;
+}
+
+.bubble-error {
+  border: 1px solid rgba(255, 68, 68, 0.4);
+}
+
+.bubble-text {
+  color: #eee;
+  font-size: 12px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.bubble-association {
+  color: #ffd700;
+  font-size: 11px;
+  margin-top: 6px;
+  font-style: italic;
+}
+
+.bubble-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+/* === Topic pills === */
+.topic-pill {
+  display: inline-block;
+  background: rgba(102, 126, 234, 0.3);
+  color: #a8b8ff;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+/* === Context Menu === */
+.context-menu {
+  background: rgba(30, 30, 30, 0.95);
+  border-radius: 8px;
+  padding: 4px 0;
+  min-width: 140px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.15s ease;
+}
+
+.context-menu-hint {
+  color: #666;
+  font-size: 10px;
+  padding: 4px 12px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.context-menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: #ddd;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.context-menu-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.context-menu-danger {
+  color: #ff6b6b;
+}
+
+.context-menu-danger:hover {
+  background: rgba(255, 68, 68, 0.15);
+}
+
+.context-menu-sep {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 4px 0;
+}
+
+/* === Input Box === */
+.input-box-overlay {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+  z-index: 100;
+}
+
+.input-box {
+  display: flex;
+  gap: 6px;
+  background: rgba(30, 30, 30, 0.95);
+  border-radius: 10px;
+  padding: 6px 8px;
+  width: 280px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.input-field {
+  flex: 1;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: #eee;
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  outline: none;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.input-field::placeholder {
+  color: #666;
+}
+
+.input-send {
+  border: none;
+  background: rgba(102, 126, 234, 0.6);
+  color: white;
+  font-size: 14px;
+  width: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.input-send:hover:not(:disabled) {
+  background: rgba(102, 126, 234, 0.9);
+}
+
+.input-send:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* === Chat Panel === */
+.chat-panel {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  max-height: 300px;
+  background: rgba(20, 20, 20, 0.92);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.2s ease;
+  z-index: 50;
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.chat-title {
+  color: #ccc;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.chat-close {
+  border: none;
+  background: transparent;
+  color: #888;
+  font-size: 14px;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px;
+  max-height: 240px;
+}
+
+.chat-empty {
+  color: #666;
+  font-size: 11px;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.chat-msg {
+  margin-bottom: 8px;
+}
+
+.chat-msg-user {
+  text-align: right;
+}
+
+.chat-msg-content {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  max-width: 85%;
+  word-break: break-word;
+}
+
+.chat-msg-user .chat-msg-content {
+  background: rgba(102, 126, 234, 0.4);
+  color: #e0e8ff;
+}
+
+.chat-msg-assistant .chat-msg-content {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ddd;
+}
+
+.chat-typing {
+  color: #888;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.chat-input-trigger {
+  color: #666;
+  font-size: 11px;
+  text-align: center;
+  padding: 6px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.chat-input-trigger:hover {
+  color: #aaa;
+}
+
+/* === Settings Panel === */
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  animation: fadeIn 0.2s ease;
+}
+
+.settings-panel {
+  background: #1e1e1e;
+  border-radius: 12px;
+  padding: 20px;
+  width: 320px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.settings-title {
+  color: #eee;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.settings-close {
+  border: none;
+  background: transparent;
+  color: #888;
+  font-size: 16px;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.settings-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.settings-section {
+  margin-bottom: 12px;
+}
+
+.settings-label {
+  display: block;
+  color: #aaa;
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.settings-input,
+.settings-textarea {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: #eee;
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  outline: none;
+  font-family: inherit;
+}
+
+.settings-input:focus,
+.settings-textarea:focus {
+  border-color: rgba(102, 126, 234, 0.5);
+}
+
+.settings-textarea {
+  resize: vertical;
+}
+
+.settings-footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.settings-btn {
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.settings-btn-cancel {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ccc;
+}
+
+.settings-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.settings-btn-save {
+  background: rgba(102, 126, 234, 0.6);
+  color: white;
+}
+
+.settings-btn-save:hover {
+  background: rgba(102, 126, 234, 0.8);
+}
+
+.settings-privacy {
+  color: #555;
+  font-size: 10px;
+  text-align: center;
+  margin-top: 12px;
+}
+
+/* === Onboarding === */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+}
+
+.onboarding-card {
+  background: #1e1e1e;
+  border-radius: 16px;
+  padding: 28px;
+  width: 320px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+  animation: fadeIn 0.3s ease;
+}
+
+.onboarding-title {
+  color: #eee;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.onboarding-desc {
+  color: #888;
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+
+.onboarding-input {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: #eee;
+  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  outline: none;
+  margin-bottom: 8px;
+}
+
+.onboarding-input:focus {
+  border-color: rgba(102, 126, 234, 0.5);
+}
+
+.onboarding-input-sm {
+  font-size: 12px;
+  padding: 8px 10px;
+}
+
+.onboarding-textarea {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: #eee;
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  outline: none;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 8px;
+}
+
+.onboarding-textarea:focus {
+  border-color: rgba(102, 126, 234, 0.5);
+}
+
+.onboarding-btn {
+  width: 100%;
+  border: none;
+  background: rgba(102, 126, 234, 0.6);
+  color: white;
+  font-size: 14px;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 8px;
+}
+
+.onboarding-btn:hover:not(:disabled) {
+  background: rgba(102, 126, 234, 0.8);
+}
+
+.onboarding-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.onboarding-btn-back {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ccc;
+}
+
+.onboarding-btn-back:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.onboarding-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.onboarding-row .onboarding-btn {
+  flex: 1;
+  margin-top: 0;
+}
+
+/* === Drag hint === */
+.drag-hint {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+/* === Scrollbar (for chat/messages) === */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+/* === Animations === */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}

@@ -1,0 +1,15 @@
+# 知识卡导出索引文件
+schema_version: 1
+locale: zh-CN
+branch: master
+exported_at: "2026-06-07T16:28:16Z"
+modules:
+    ai_desktop_pet:
+        dir_name: AI 桌面宠物交互与知识管理
+        title: AI 桌面宠物交互与知识管理
+        scope:
+            - ai-desktop-pet/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []

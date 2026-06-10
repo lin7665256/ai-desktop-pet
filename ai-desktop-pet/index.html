@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Desktop Pet</title>
+    <!-- Live2D Cubism 4 Core SDK (required by pixi-live2d-display) -->
+    <script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
+    <style>
+      html, body {
+        background: transparent !important;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <div id="error-display" style="display:none;color:red;font-family:monospace;padding:20px;background:#111;font-size:12px;position:fixed;inset:0;z-index:9999;overflow:auto;"></div>
+    <script>
+      window.onerror = function(msg, url, line, col, error) {
+        var el = document.getElementById('error-display');
+        if (el) {
+          el.style.display = 'block';
+          el.innerHTML = '<b>JS Error:</b><br>' + msg + '<br>at ' + url + ':' + line + ':' + col +
+            '<br><br>' + (error && error.stack ? error.stack.replace(/\n/g,'<br>') : '');
+        }
+      };
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

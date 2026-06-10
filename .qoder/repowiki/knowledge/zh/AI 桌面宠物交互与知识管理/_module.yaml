@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: ai_desktop_pet
+title: AI 桌面宠物交互与知识管理
+scope:
+    - ai-desktop-pet/
+source_files: []
+depends_on: []
+related_to: []
