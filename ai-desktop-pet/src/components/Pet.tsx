@@ -9,6 +9,7 @@ import type { PetState } from '../lib/types';
 
 interface PetProps {
   state: PetState;
+  compact?: boolean;
   onDoubleClick?: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
   onDragStart?: () => void;
@@ -33,11 +34,14 @@ function checkWebGLSupport(): boolean {
   }
 }
 
-export default function Pet({ state, onDoubleClick, onContextMenu, onDragStart }: PetProps) {
+export default function Pet({ state, compact = false, onDoubleClick, onContextMenu, onDragStart }: PetProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const appRef = useRef<PIXI.Application | null>(null);
   const modelRef = useRef<Live2DModel | null>(null);
   const [webglFailed, setWebglFailed] = useState(false);
+
+  const CANVAS_W = compact ? 200 : 300;
+  const CANVAS_H = compact ? 260 : 400;
 
   // Initialize PixiJS + Live2D on mount
   useEffect(() => {
@@ -53,8 +57,8 @@ export default function Pet({ state, onDoubleClick, onContextMenu, onDragStart }
     try {
       const app = new PIXI.Application({
         view: canvasRef.current,
-        width: 300,
-        height: 400,
+        width: CANVAS_W,
+        height: CANVAS_H,
         backgroundAlpha: 0,
         antialias: true,
         resolution: window.devicePixelRatio || 1,
@@ -165,10 +169,11 @@ export default function Pet({ state, onDoubleClick, onContextMenu, onDragStart }
   }, [onDragStart]);
 
   const containerProps = {
-    className: `pet-container ${cssState}`,
+    className: `pet-container ${cssState}${compact ? ' pet-compact' : ''}`,
     onMouseDown: handleMouseDown,
     onDoubleClick,
     onContextMenu,
+    style: { width: CANVAS_W, height: CANVAS_H },
   };
 
   // CSS fallback pet when WebGL fails
@@ -191,7 +196,7 @@ export default function Pet({ state, onDoubleClick, onContextMenu, onDragStart }
 
   return (
     <div {...containerProps}>
-      <canvas ref={canvasRef} width={300} height={400} style={{ pointerEvents: 'none' }} />
+      <canvas ref={canvasRef} width={CANVAS_W} height={CANVAS_H} style={{ pointerEvents: 'none' }} />
     </div>
   );
 }

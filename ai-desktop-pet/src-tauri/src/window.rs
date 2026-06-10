@@ -61,7 +61,7 @@ pub fn restore_window_position(window: &WebviewWindow) {
             let screen_size = monitor.size();
             let scale = monitor.scale_factor();
             let x = (screen_size.width as f64 / scale - 380.0) as i32;
-            let y = (screen_size.height as f64 / scale - 500.0) as i32;
+            let y = (screen_size.height as f64 / scale - 650.0) as i32;
             let phys_x = (x as f64 * scale) as i32;
             let phys_y = (y as f64 * scale) as i32;
             let _ = window.set_position(Position::Physical(PhysicalPosition::new(phys_x, phys_y)));

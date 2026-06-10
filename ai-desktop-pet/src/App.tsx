@@ -8,7 +8,6 @@ import { usePetState } from './hooks/usePetState';
 import { useChat } from './hooks/useChat';
 import Pet from './components/Pet';
 import Bubble from './components/Bubble';
-import InputBox from './components/InputBox';
 import ContextMenu from './components/ContextMenu';
 import SettingsPanel from './components/Settings';
 import Onboarding from './components/Onboarding';
@@ -24,9 +23,6 @@ function App() {
 
   // === Context menu state ===
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
-
-  // === Input box state ===
-  const [showInput, setShowInput] = useState(false);
 
   // === Pet state (feeding pipeline) ===
   const {
@@ -187,10 +183,9 @@ function App() {
     invoke('close_window').catch(console.error);
   }, []);
 
-  // === Double click → open chat input ===
+  // === Double click → open chat ===
   const handleDoubleClick = useCallback(() => {
     chat.openChat();
-    setShowInput(true);
   }, [chat]);
 
   // === Drag window from pet body ===
@@ -201,7 +196,6 @@ function App() {
   // === Chat send ===
   const handleChatSend = useCallback(async (text: string) => {
     await chat.sendMessage(text);
-    setShowInput(false);
   }, [chat]);
 
   // === Loading state ===
@@ -239,32 +233,20 @@ function App() {
         <Bubble data={bubbleData} onDismiss={dismissBubble} autoDismiss={bubbleData.type !== 'progress'} />
       )}
 
-      {/* Chat panel (overlay when active) */}
+      {/* Chat panel (integrated with input) */}
       {chat.isVisible && (
-        <>
-          <ChatPanel
-            messages={chat.messages}
-            isProcessing={chat.isProcessing}
-            onClose={chat.closeChat}
-          />
-          {showInput && (
-            <InputBox
-              onSend={handleChatSend}
-              onCancel={() => setShowInput(false)}
-              isProcessing={chat.isProcessing}
-            />
-          )}
-          {!showInput && !chat.isProcessing && (
-            <div className="chat-input-trigger" onClick={() => setShowInput(true)}>
-              点击输入...
-            </div>
-          )}
-        </>
+        <ChatPanel
+          messages={chat.messages}
+          isProcessing={chat.isProcessing}
+          onClose={chat.closeChat}
+          onSend={handleChatSend}
+        />
       )}
 
-      {/* Pet */}
+      {/* Pet (compact when chat is open) */}
       <Pet
         state={petState}
+        compact={chat.isVisible}
         onDoubleClick={handleDoubleClick}
         onContextMenu={handleContextMenu}
         onDragStart={handleDragStart}
