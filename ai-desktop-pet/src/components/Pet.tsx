@@ -39,6 +39,8 @@ export default function Pet({ state, compact = false, onDoubleClick, onContextMe
   const appRef = useRef<PIXI.Application | null>(null);
   const modelRef = useRef<Live2DModel | null>(null);
   const [webglFailed, setWebglFailed] = useState(false);
+  // Model bounding box for tight hit area
+  const [modelBounds, setModelBounds] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
 
   const CANVAS_W = compact ? 200 : 300;
   const CANVAS_H = compact ? 260 : 400;
@@ -89,6 +91,14 @@ export default function Pet({ state, compact = false, onDoubleClick, onContextMe
           model.y = app.screen.height - model.height * scale;
 
           model.motion('idle');
+
+          // Compute tight bounding box for the scaled model
+          setModelBounds({
+            x: model.x,
+            y: model.y,
+            w: model.width * scale,
+            h: model.height * scale,
+          });
         })
         .catch((err) => {
           console.error('[Pet] Failed to load Live2D model:', err);
@@ -168,19 +178,46 @@ export default function Pet({ state, compact = false, onDoubleClick, onContextMe
     };
   }, [onDragStart]);
 
+  const containerStyle: React.CSSProperties = { width: CANVAS_W, height: CANVAS_H, position: 'relative' };
+
+  // Tight hit area matching the model's actual bounds
+  const hitAreaStyle: React.CSSProperties = modelBounds
+    ? {
+        position: 'absolute',
+        left: modelBounds.x,
+        top: modelBounds.y,
+        width: modelBounds.w,
+        height: modelBounds.h,
+        cursor: 'grab',
+        zIndex: 10,
+      }
+    : {
+        // Before model loads, use a centered approximate area
+        position: 'absolute',
+        left: '10%',
+        top: '15%',
+        width: '80%',
+        height: '80%',
+        cursor: 'grab',
+        zIndex: 10,
+      };
+
   const containerProps = {
     className: `pet-container ${cssState}${compact ? ' pet-compact' : ''}`,
+    style: containerStyle,
+  };
+
+  const interactionProps = {
     onMouseDown: handleMouseDown,
     onDoubleClick,
     onContextMenu,
-    style: { width: CANVAS_W, height: CANVAS_H },
   };
 
   // CSS fallback pet when WebGL fails
   if (webglFailed) {
     return (
       <div {...containerProps} className={`pet-container pet-fallback ${cssState}`}>
-        <div className="pet-css-body">
+        <div className="pet-css-body" {...interactionProps}>
           <div className="pet-css-face">
             <div className="pet-css-eye pet-css-eye-left" />
             <div className="pet-css-eye pet-css-eye-right" />
@@ -197,6 +234,8 @@ export default function Pet({ state, compact = false, onDoubleClick, onContextMe
   return (
     <div {...containerProps}>
       <canvas ref={canvasRef} width={CANVAS_W} height={CANVAS_H} style={{ pointerEvents: 'none' }} />
+      {/* Tight hit area matching model bounds — only this area responds to mouse events */}
+      <div {...interactionProps} style={hitAreaStyle} />
     </div>
   );
 }

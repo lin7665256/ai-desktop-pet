@@ -119,7 +119,6 @@ export interface CoreMemory {
     first_seen: string;
     last_active: string;
   };
-  recent_files: RecentFile[];
 }
 
 // === Settings (persisted to settings.json) ===

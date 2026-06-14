@@ -13,8 +13,8 @@ export function buildSystemPrompt(memory: CoreMemory, petName: string): string {
   );
 
   const recentSummary =
-    memory.recent_files.length > 0
-      ? memory.recent_files
+    memory.knowledge_profile.recent_files.length > 0
+      ? memory.knowledge_profile.recent_files
           .slice(0, 5)
           .map((f) => `- ${f.name}: ${f.summary}`)
           .join('\n')
@@ -93,5 +93,5 @@ export function buildChatPrompt(memory: CoreMemory, petName: string): string {
 - ${memory.user.note || '暂无简介'}
 - 陪用户${daysSince}天了
 - 用户关注：${memory.knowledge_profile.interest_signal || '还在了解中'}
-- 最近投喂的文件：${memory.recent_files.slice(0, 3).map((f) => f.name).join('、') || '暂无'}`;
+- 最近投喂的文件：${memory.knowledge_profile.recent_files.slice(0, 3).map((f) => f.name).join('、') || '暂无'}`;
 }

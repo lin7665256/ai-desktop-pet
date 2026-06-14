@@ -34,7 +34,28 @@ export async function loadCoreMemory(): Promise<CoreMemory | null> {
   try {
     const content = await invoke<string | null>('read_app_json', { filename: MEMORY_FILE });
     if (!content) return null;
-    return JSON.parse(content) as CoreMemory;
+    const raw = JSON.parse(content);
+    // Migrate: strip legacy top-level recent_files (moved to knowledge_profile)
+    delete raw.recent_files;
+    // Migrate: prune orphan topics and recalculate feed_count from actual file refs
+    if (raw.knowledge_profile) {
+      const kp = raw.knowledge_profile;
+      const topicCountMap = new Map<string, number>();
+      for (const f of kp.recent_files || []) {
+        for (const t of f.topics || []) {
+          topicCountMap.set(t, (topicCountMap.get(t) || 0) + 1);
+        }
+      }
+      if (kp.topics) {
+        kp.topics = kp.topics
+          .filter((t: { name: string }) => topicCountMap.has(t.name))
+          .map((t: { name: string; feed_count: number; last_fed: string }) => ({
+            ...t,
+            feed_count: topicCountMap.get(t.name) || 0,
+          }));
+      }
+    }
+    return raw as CoreMemory;
   } catch {
     return null;
   }
@@ -69,7 +90,6 @@ export function createEmptyCoreMemory(petName: string, userName: string, userNot
       first_seen: now,
       last_active: now,
     },
-    recent_files: [],
   };
 }
 

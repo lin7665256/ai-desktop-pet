@@ -11,7 +11,7 @@ import type {
 } from '../lib/types';
 import { limits, petMessages } from '../lib/config';
 import { extractText, isEmpty } from './fileParser';
-import { summarize, updateInterestSignal } from './llm';
+import { summarize, updateInterestSignal, postProcessOutput } from './llm';
 import { addFileToProfile, getRecentFilesForContext, getTopicsSummary } from '../lib/knowledge';
 
 function createFeedingError(type: FeedingErrorType): FeedingError {
@@ -63,6 +63,7 @@ export async function processFile(
   onProgress({ stage: 'summarizing', message: '消化中...' });
   const recentFiles = getRecentFilesForContext(profile);
   const topicsContext = getTopicsSummary(profile);
+  const existingTopicNames = profile.topics.map((t) => t.name);
 
   let summary;
   try {
@@ -72,12 +73,13 @@ export async function processFile(
       recentFiles,
       topicsContext,
       (stage, message) => onProgress({ stage, message }),
+      existingTopicNames,
     );
   } catch {
     throw createFeedingError('llm_failure');
   }
 
-  return { fileInfo, extraction, summary };
+  return { fileInfo, extraction, summary: { ...summary, summary: postProcessOutput(summary.summary) } };
 }
 
 /**

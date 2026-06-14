@@ -12,7 +12,8 @@ export function createEmptyProfile(): KnowledgeProfile {
 }
 
 /**
- * Add a processed file to the knowledge profile (immutable update)
+ * Add a processed file to the knowledge profile (immutable update).
+ * If a file with the same name already exists, replace it (dedup).
  */
 export function addFileToProfile(
   profile: KnowledgeProfile,
@@ -22,33 +23,43 @@ export function addFileToProfile(
 ): KnowledgeProfile {
   const now = new Date().toISOString();
 
-  // Update topic counts
+  // --- File dedup: remove ALL old entries with same name ---
+  const oldEntries = profile.recent_files.filter((f) => f.name === fileName);
+  const filesWithoutOld = profile.recent_files.filter((f) => f.name !== fileName);
+
+  // --- Topic count update ---
   const updatedTopics = [...profile.topics];
+
+  // If replacing, decrement ALL old entries' topic counts
+  for (const oldEntry of oldEntries) {
+    for (const oldTopic of oldEntry.topics) {
+      const t = updatedTopics.find((x) => x.name === oldTopic);
+      if (t && t.feed_count > 1) {
+        t.feed_count -= 1;
+      } else if (t) {
+        // Remove topic if count drops to 0
+        updatedTopics.splice(updatedTopics.indexOf(t), 1);
+      }
+    }
+  }
+
+  // Add/increment new topics
   for (const topicName of topics) {
     const existing = updatedTopics.find((t) => t.name === topicName);
     if (existing) {
       existing.feed_count += 1;
       existing.last_fed = now;
     } else {
-      updatedTopics.push({
-        name: topicName,
-        feed_count: 1,
-        last_fed: now,
-      });
+      updatedTopics.push({ name: topicName, feed_count: 1, last_fed: now });
     }
   }
 
   // Sort by feed_count descending
   updatedTopics.sort((a, b) => b.feed_count - a.feed_count);
 
-  // Add to recent files (keep last 20)
-  const newRecentFile: RecentFile = {
-    name: fileName,
-    fed_at: now,
-    summary,
-    topics,
-  };
-  const updatedRecentFiles = [newRecentFile, ...profile.recent_files].slice(0, 20);
+  // --- Add new file entry at front (keep last 20) ---
+  const newRecentFile: RecentFile = { name: fileName, fed_at: now, summary, topics };
+  const updatedRecentFiles = [newRecentFile, ...filesWithoutOld].slice(0, 20);
 
   return {
     ...profile,

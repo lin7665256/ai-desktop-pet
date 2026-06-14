@@ -88,10 +88,23 @@ function parseSummaryOutput(raw: string): {
 }
 
 /**
- * Post-process LLM output to filter forbidden phrases
+ * Clean LLM output: remove truncation artifacts (replacement chars, partial UTF-8)
+ */
+function cleanTruncation(text: string): string {
+  // Strip Unicode replacement character (U+FFFD) — indicates broken UTF-8
+  let cleaned = text.replace(/\uFFFD/g, '');
+  // Strip trailing incomplete sentence (ends mid-character or with lone punctuation)
+  cleaned = cleaned.replace(/[，。；：、！？…\s]*$/, '');
+  // If the last char is an opening bracket/quote, remove it
+  cleaned = cleaned.replace(/[（(\[「『"']\s*$/, '');
+  return cleaned.trim();
+}
+
+/**
+ * Post-process LLM output to filter forbidden phrases and clean truncation
  */
 export function postProcessOutput(text: string): string {
-  let result = text;
+  let result = cleanTruncation(text);
   for (const phrase of FORBIDDEN_PHRASES) {
     if (result.includes(phrase)) {
       result = result.replace(new RegExp(phrase, 'g'), '嗯。');
@@ -109,6 +122,7 @@ export async function summarize(
   recentFiles?: { name: string; summary: string }[],
   topicsContext?: string,
   onProgress?: (stage: string, message: string) => void,
+  existingTopicNames?: string[],
 ): Promise<SummaryResult> {
   const startTime = performance.now();
   const client = new OpenAI({
@@ -120,12 +134,14 @@ export async function summarize(
   const tokenCount = countTokens(text);
   let apiCalls = 0;
 
-  const systemPrompt = `你是桌面宠物。请用3-5句话总结以下文件的核心内容。
-要求：
-- 先给结论，再给细节
-- 如果内容质量差，直说
+  const systemPrompt = `你是桌面宠物。用不超过80个字总结文件核心内容。
+规则：
+- 最多3句话，每句短
+- 只给结论，不给过程
+- 内容差就说差，但仍给摘要
 - 语气简洁直接，不用客套话
-- 最后输出JSON格式：{"topics": ["主题1", "主题2"], "related_file": "关联的旧文件名或null"}`;
+- 如和之前文件有关联，最后一句提一句
+- 最后输出JSON：{"topics": ["主题1"], "related_file": "关联旧文件名或null"}`;
 
   const recentContext =
     recentFiles && recentFiles.length > 0
@@ -149,7 +165,7 @@ export async function summarize(
     apiCalls = 1;
 
     onProgress?.('summarizing', '提取主题标签...');
-    const topicResult = await extractTopics(client, raw, config.model);
+    const topicResult = await extractTopics(client, raw, config.model, existingTopicNames);
     if (topicResult.topics.length > 0) {
       parsed.topics = topicResult.topics;
     }
@@ -192,7 +208,7 @@ export async function summarize(
     apiCalls++;
 
     onProgress?.('summarizing', '提取主题标签...');
-    const topicResult = await extractTopics(client, raw, config.model);
+    const topicResult = await extractTopics(client, raw, config.model, existingTopicNames);
     if (topicResult.topics.length > 0) {
       parsed.topics = topicResult.topics;
     }
@@ -228,7 +244,7 @@ export async function summarize(
     apiCalls = 1;
 
     onProgress?.('summarizing', '提取主题标签...');
-    const topicResult = await extractTopics(client, raw, config.model);
+    const topicResult = await extractTopics(client, raw, config.model, existingTopicNames);
     if (topicResult.topics.length > 0) {
       parsed.topics = topicResult.topics;
     }
@@ -247,16 +263,20 @@ export async function summarize(
 }
 
 /**
- * Extract topics from LLM output
+ * Extract topics from LLM output, preferring existing topic names for normalization
  */
 async function extractTopics(
   client: OpenAI,
   text: string,
   model: string,
+  existingTopicNames?: string[],
 ): Promise<{ topics: string[] }> {
+  const existingHint = existingTopicNames && existingTopicNames.length > 0
+    ? `\n已有主题列表（优先复用已有名称，语义相近时直接沿用）：${existingTopicNames.join('、')}`
+    : '';
   const response = await llmCall(
     client,
-    '从以下文本摘要中提取1-3个主题标签。只输出JSON数组格式，如 ["主题1", "主题2"]。不要其他内容。',
+    `从以下文本摘要中提取1-3个主题标签。${existingHint}\n只输出JSON数组格式，如 ["主题1", "主题2"]。不要其他内容。`,
     text,
     model,
   );
@@ -300,7 +320,7 @@ export async function updateInterestSignal(
     config.model,
   );
 
-  return response.trim();
+  return postProcessOutput(response);
 }
 
 /**

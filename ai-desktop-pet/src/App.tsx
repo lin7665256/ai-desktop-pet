@@ -80,14 +80,9 @@ function App() {
     if (!cm || !s) return;
 
     const updatedMemory: CoreMemory = {
-      ...cm,
+      pet: cm.pet,
+      user: cm.user,
       knowledge_profile: knowledgeProfile,
-      recent_files: processedFiles.slice(-10).map((r) => ({
-        name: r.fileInfo.name,
-        fed_at: r.fedAt,
-        summary: r.summary.summary,
-        topics: r.summary.topics,
-      })),
       stats: {
         ...cm.stats,
         total_feeds: processedFiles.length,

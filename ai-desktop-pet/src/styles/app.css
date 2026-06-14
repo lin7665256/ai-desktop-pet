@@ -51,7 +51,6 @@ html, body {
 .pet-container {
   width: 300px;
   height: 400px;
-  cursor: grab;
   position: relative;
   flex-shrink: 0;
 }
@@ -62,7 +61,7 @@ html, body {
 }
 
 .pet-container:active {
-  cursor: grabbing;
+  /* cursor managed by inner hit-area div */
 }
 
 .pet-container canvas {
@@ -88,6 +87,7 @@ html, body {
   box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
   transition: all 0.3s ease;
   animation: float 3s ease-in-out infinite;
+  cursor: grab;
 }
 
 .pet-fallback.thinking .pet-css-body {
@@ -180,6 +180,12 @@ html, body {
   font-size: 12px;
   line-height: 1.5;
   word-break: break-word;
+  max-height: 72px;
+  overflow: hidden;
+  position: relative;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
 }
 
 .bubble-association {
